@@ -1,11 +1,7 @@
 #!/usr/local/bin/python # if local
 ## if in MH Servers #!/mnt/asp/python/bin/python # for MH Servers
 
-import logging, sys, argparse, gzip, os, datetime
-
-
-
-
+import logging, sys, argparse, gzip, os, datetime, socket
 
 def get_args():
   # Define the parser
@@ -74,7 +70,7 @@ def readVars(filename):
 def findAndCompressLogs(dict):
   # first lets create the temp folder
   tmpFolder = createTmpFolder(curDate2)
-  files=()
+  files=[]
 
   if dict['bbservices'] == 'Y':
     output = gzipFile(tmpFolder, filenameDict['bbservices'], yesDate2)
@@ -111,16 +107,20 @@ def createTmpFolder(date):
 
 
 def gzipFile(tmpFolder, inputFilename, date):
-  bbLogsPath='/usr/local/blackboard/logs/'
-  inputFile=open(bbLogsPath+inputFileName, 'rb')
-  gzippedFile=gzip.open('/tmp/'+date+inputFilename.gz, 'wb')
-  gzippedFile.writelines(inputFile)
-  gzippedFile.close()
-  inputFile.close()
+  #bbLogsPath='/usr/local/blackboard/logs/'
+  #inputFile=open(bbLogsPath+inputFileName, 'rb')
+  gzipFile=appnum + '-' + inputFilename + '-' + date +'.gz'
+  #gzippedFile=gzip.open('/tmp/'+date+'/'+gzipFile, 'wb')
+  #gzippedFile.writelines(inputFile)
+  #gzippedFile.close()
+  #inputFile.close()
+  output = gzipFile
   return output
 
 
-
+def uploadFiles(files):
+  print "uploading"
+  print files
 
 # global vars
 today = datetime.datetime.now()
@@ -129,6 +129,10 @@ curDate2 = today.strftime("%Y-%m-%d")
 yesterday = datetime.datetime.now() - datetime.timedelta(days = 1)
 yesDate1 = yesterday.strftime("%Y%m%d")
 yesDate2 = yesterday.strftime("%Y-%m-%d")
+
+hostname = socket.gethostname()
+appnum = hostname[-5:]
+
 
 filenameDict = {'bbservices': 'bb-services-log.',
                 'bbsql': 'bb-sqlerror-log.',
