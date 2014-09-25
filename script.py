@@ -69,7 +69,7 @@ def readVars(filename):
 
 def findAndCompressLogs(dict):
   # first lets create the temp folder
-  tmpFolder = createTmpFolder(curDate2)
+  tmpFolder = createTmpFolder()
   files=[]
 
   if dict['bbservices'] == 'Y':
@@ -91,38 +91,55 @@ def findAndCompressLogs(dict):
     output = gzipFile(tmpFolder, filenameDict['tomcataccess'], yesDate2)
     files.append(output)
   if dict['tomcatstd'] == 'Y':
-    output = gzipFile(tmpFolder, filenameDict['tomcatstd'], yesDate2)
+    output = gzipFile(tmpFolder, filenameDict['tomcatstd'], yesDate1)
     files.append(output)
 
   uploadFiles(files)
 
 
-def createTmpFolder(date):
-  if not os.path.exists('/tmp/'+date):
-    os.makedirs('/tmp/'+date)
-    folder='/tmp/'+date+'/'
+def createTmpFolder():
+  if not os.path.exists('/tmp/uploader'):
+    os.makedirs('/tmp/uploader')
+    folder='/tmp/uploader/'
     return folder
   else:
     return False
 
 
 def gzipFile(tmpFolder, inputFilename, date):
-  #bbLogsPath='/usr/local/blackboard/logs/'
-  #inputFile=open(bbLogsPath+inputFileName, 'rb')
-  gzipFile=appnum + '-' + inputFilename + '-' + date +'.gz'
-  #gzippedFile=gzip.open('/tmp/'+date+'/'+gzipFile, 'wb')
-  #gzippedFile.writelines(inputFile)
-  #gzippedFile.close()
-  #inputFile.close()
-  output = gzipFile
-  return output
+  # format bb-services-log.2014-09-25.txt
+  bbLogsPath='/usr/local/blackboard/logs/'
+
+  if inputFilename == 'stdout-stderr-':
+    log = inputFilename + date + '.log'
+    inputFile=open(bbLogsPath +'tomcat/' +log, 'rb')
+
+  if inputFilename == 'bb-access-log.':
+    log = inputFilename + date + '.txt'
+    inputFile=open(bbLogsPath +'tomcat/' +log, 'rb')
+
+  else :
+    log = inputFilename + date + '.txt'
+    inputFile=open(bbLogsPath +log, 'rb')
+
+
+  gzipFile=appnum + '-' + inputFilename + date +'.gz'
+  gzippedFile=gzip.open('/tmp/uploader/'+'/'+gzipFile, 'wb')
+  gzippedFile.writelines(inputFile)
+  gzippedFile.close()
+  inputFile.close()
+
+  return gzipFile
 
 
 def uploadFiles(files):
   print "uploading"
   print files
 
-# global vars
+
+####################
+### GLOBAL VARS ####
+####################
 today = datetime.datetime.now()
 curDate2 = today.strftime("%Y-%m-%d")
 
@@ -139,7 +156,7 @@ filenameDict = {'bbservices': 'bb-services-log.',
                 'bbauth': 'bb-authentication-log.',
                 'bbsessions': 'bb-session-log.',
                 'bbemail': 'bb-email-log.',
-                'tomcataccess': 'tomcat/bb-access-log.',
+                'tomcataccess': 'bb-access-log.',
                 'tomcatstd': 'stdout-stderr-' }
 
 
