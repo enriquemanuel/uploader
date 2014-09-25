@@ -1,5 +1,11 @@
-#!/usr/local/bin/python
-import logging, sys, argparse
+#!/usr/local/bin/python # if local
+## if in MH Servers #!/mnt/asp/python/bin/python # for MH Servers
+
+import logging, sys, argparse, gzip, os, datetime
+
+
+
+
 
 def get_args():
   # Define the parser
@@ -45,13 +51,93 @@ def setVars(args):
       args.path='/'
     if args.id is None:
       args.id='~/.ssh/id_rsa'
+    findAndCompressLogs(vars(args))
   else:
     readVars(args.file)
 
 
 # Read the vars from the file
 def readVars(filename):
-  print filename
+  try:
+    f = open(filename)
+  except IOError: # file does not exist
+    print "file does not exist"
+  else:
+    varsdict = {}
+    for lines in f:
+      items = lines.split(':', 1)
+      #print items[1].rstrip('\n')
+      varsdict[items[0]] = items[1].rstrip('\n')
+    #print varsdict
+    findAndCompressLogs(varsdict)
+
+def findAndCompressLogs(dict):
+  # first lets create the temp folder
+  tmpFolder = createTmpFolder(curDate2)
+  files=()
+
+  if dict['bbservices'] == 'Y':
+    output = gzipFile(tmpFolder, filenameDict['bbservices'], yesDate2)
+    files.append(output)
+  if dict['bbsql'] == 'Y':
+    output = gzipFile(tmpFolder, filenameDict['bbsql'], yesDate2)
+    files.append(output)
+  if dict['bbauth'] =='Y' :
+    output = gzipFile(tmpFolder, filenameDict['bbauth'], yesDate2)
+    files.append(output)
+  if dict['bbsessions'] =='Y':
+    output = gzipFile(tmpFolder, filenameDict['bbsessions'], yesDate2)
+    files.append(output)
+  if dict['bbemail'] == 'Y':
+    output = gzipFile(tmpFolder, filenameDict['bbemail'], yesDate2)
+    files.append(output)
+  if dict['tomcataccess'] == 'Y':
+    output = gzipFile(tmpFolder, filenameDict['tomcataccess'], yesDate2)
+    files.append(output)
+  if dict['tomcatstd'] == 'Y':
+    output = gzipFile(tmpFolder, filenameDict['tomcatstd'], yesDate2)
+    files.append(output)
+
+  uploadFiles(files)
+
+
+def createTmpFolder(date):
+  if not os.path.exists('/tmp/'+date):
+    os.makedirs('/tmp/'+date)
+    folder='/tmp/'+date+'/'
+    return folder
+  else:
+    return False
+
+
+def gzipFile(tmpFolder, inputFilename, date):
+  bbLogsPath='/usr/local/blackboard/logs/'
+  inputFile=open(bbLogsPath+inputFileName, 'rb')
+  gzippedFile=gzip.open('/tmp/'+date+inputFilename.gz, 'wb')
+  gzippedFile.writelines(inputFile)
+  gzippedFile.close()
+  inputFile.close()
+  return output
+
+
+
+
+# global vars
+today = datetime.datetime.now()
+curDate2 = today.strftime("%Y-%m-%d")
+
+yesterday = datetime.datetime.now() - datetime.timedelta(days = 1)
+yesDate1 = yesterday.strftime("%Y%m%d")
+yesDate2 = yesterday.strftime("%Y-%m-%d")
+
+filenameDict = {'bbservices': 'bb-services-log.',
+                'bbsql': 'bb-sqlerror-log.',
+                'bbauth': 'bb-authentication-log.',
+                'bbsessions': 'bb-session-log.',
+                'bbemail': 'bb-email-log.',
+                'tomcataccess': 'tomcat/bb-access-log.',
+                'tomcatstd': 'stdout-stderr-' }
+
 
 # Call the function get_args to define all the arguments
 get_args()

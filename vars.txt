@@ -1,0 +1,12 @@
+sftp:enriquemanuel.me
+user:em
+id:/Users/em/.ssh/github_rsa
+path:/
+port:22
+bbservices:Y
+bbsql:N
+bbauth:Y
+bbsessions:N
+bbemail:N
+tomcataccess:Y
+tomcatstd:Y
