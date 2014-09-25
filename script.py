@@ -30,11 +30,7 @@ def get_args():
   cli_parser.add_argument('--tomcataccess', type=str, help='To include or not the bb-services.log')
   cli_parser.add_argument('--tomcatstd', type=str, help='To include or not the bb-services.log')
 
-  # Get all the values in the args variable
   args = parser.parse_args()
-
-  # define the defaults for Port / Path / Id
-
 
   # Set all the Vars
   return setVars(args)
