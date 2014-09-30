@@ -1,5 +1,5 @@
 #!/usr/local/bin/python # if local
-## if in MH Servers #!/mnt/asp/python/bin/python # for MH Servers
+## if in MH Servers #!/mnt/asp/python/bin/python
 
 import logging, sys, argparse, gzip, os, datetime, socket
 
@@ -25,8 +25,8 @@ def get_args():
   cli_parser.add_argument('--port', type=str, help='Port to connect to SFTP (default is 22)')
   cli_parser.add_argument('--path', type=str, help='Path to drop the logs (default is /)')
   cli_parser.add_argument('--bbservices', type=str, help='To include or not the bb-services.log')
-  cli_parser.add_argument('--bbsql', type=int, help='To include or not the bb-services.log')
-  cli_parser.add_argument('--bbauth', type=int, help='To include or not the bb-services.log')
+  cli_parser.add_argument('--bbsql', type=str, help='To include or not the bb-services.log')
+  cli_parser.add_argument('--bbauth', type=str, help='To include or not the bb-services.log')
   cli_parser.add_argument('--bbsessions', type=str, help='To include or not the bb-services.log')
   cli_parser.add_argument('--bbemail', type=str, help='To include or not the bb-services.log')
   cli_parser.add_argument('--tomcataccess', type=str, help='To include or not the bb-services.log')
@@ -38,6 +38,7 @@ def get_args():
   return setVars(args)
 
 def setVars(args):
+
   try:
     args.file
   except AttributeError: # file is not defined, so using CLI
@@ -54,18 +55,13 @@ def setVars(args):
 
 # Read the vars from the file
 def readVars(filename):
-  try:
-    f = open(filename)
-  except IOError: # file does not exist
-    print "file does not exist"
-  else:
+  with open(filename) as f:
     varsdict = {}
-    for lines in f:
-      items = lines.split(':', 1)
-      #print items[1].rstrip('\n')
+    for line in f:
+      items = line.split(':', 1)
       varsdict[items[0]] = items[1].rstrip('\n')
-    #print varsdict
-    findAndCompressLogs(varsdict)
+  findAndCompressLogs(varsdict)
+
 
 def findAndCompressLogs(dict):
   # first lets create the temp folder
@@ -94,7 +90,8 @@ def findAndCompressLogs(dict):
     output = gzipFile(tmpFolder, filenameDict['tomcatstd'], yesDate1)
     files.append(output)
 
-  uploadFiles(files)
+
+  uploadFiles(files, dict)
 
 
 def createTmpFolder():
@@ -107,39 +104,44 @@ def createTmpFolder():
 
 
 def gzipFile(tmpFolder, inputFilename, date):
-  # format bb-services-log.2014-09-25.txt
   bbLogsPath='/usr/local/blackboard/logs/'
-
-  if inputFilename == 'stdout-stderr-':
+  log=""
+  if  inputFilename == 'stdout-stderr-':
+   # print "inside the if " +inputFilename
     log = inputFilename + date + '.log'
     inputFile=open(bbLogsPath +'tomcat/' +log, 'rb')
-
   if inputFilename == 'bb-access-log.':
+  #  print "inside if "+ inputFilename
     log = inputFilename + date + '.txt'
     inputFile=open(bbLogsPath +'tomcat/' +log, 'rb')
-
-  else :
+  elif log == "":
+    #print "else " + inputFilename
     log = inputFilename + date + '.txt'
     inputFile=open(bbLogsPath +log, 'rb')
-
 
   gzipFile=appnum + '-' + inputFilename + date +'.gz'
   gzippedFile=gzip.open('/tmp/uploader/'+'/'+gzipFile, 'wb')
   gzippedFile.writelines(inputFile)
   gzippedFile.close()
   inputFile.close()
-
   return gzipFile
 
-
-def uploadFiles(files):
+def uploadFiles(files, dict):
   print "uploading"
-  print files
+  #rsync -azP -e 'ssh -p22 -i /tmp/bk/evalenzuela/something_rsa' /tmp/uploader/ ftpuser@104.131.39.131:files/
+
+  #os.system("rsync -azP -e 'ssh -p" + dict['port'] + "-i " + dict['id'] + "' /tmp/uploader/ " + dict['user'] + "@" + dict['sftp'] + ":" + dict['path'])
+
+
+
+  print "remove files"
+  #shutil.rmtree('/tmp/uploader/')
 
 
 ####################
 ### GLOBAL VARS ####
 ####################
+globalargs ={}
 today = datetime.datetime.now()
 curDate2 = today.strftime("%Y-%m-%d")
 
