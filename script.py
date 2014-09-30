@@ -126,16 +126,15 @@ def gzipFile(tmpFolder, inputFilename, date):
   inputFile.close()
   return gzipFile
 
-def uploadFiles(files, dict):
-  print "uploading"
-  #rsync -azP -e 'ssh -p22 -i /tmp/bk/evalenzuela/something_rsa' /tmp/uploader/ ftpuser@104.131.39.131:files/
 
-  #os.system("rsync -azP -e 'ssh -p" + dict['port'] + "-i " + dict['id'] + "' /tmp/uploader/ " + dict['user'] + "@" + dict['sftp'] + ":" + dict['path'])
-
-
-
-  print "remove files"
-  #shutil.rmtree('/tmp/uploader/')
+def uploadFiles(files,dict):
+  print "uploading the folloing files:"
+  print files
+  os.system("rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp'])
++ ":" + str(dict['path']))
+  # rsync -azP -e 'ssh -p22 -i /tmp/bk/evalenzuela/something_rsa' /tmp/uploader/ ftpuser@104.131.39.131:files/
+  print "removing files"
+  shutil.rmtree('/tmp/uploader/')
 
 
 ####################
