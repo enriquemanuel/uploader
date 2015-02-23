@@ -130,7 +130,8 @@ def gzipFile(tmpFolder, inputFilename, date):
 def uploadFiles(files,dict):
   print "uploading the folloing files:"
   print files
-  os.system("rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp'])
+  os.system("sftp -b /usr/local/blackboard/content/vi/bb_bb60/plugins/log_uploader/batchfile -oPort=" + str(dict['port']) + " -oIdentityFile="+str(dict['id']) + " " +str(dict['user']) + "@" + str(dict['sftp']) + ":" + str(dict['path'] ) )
+  #os.system("rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp'])
 + ":" + str(dict['path']))
   # rsync -azP -e 'ssh -p22 -i /tmp/bk/evalenzuela/something_rsa' /tmp/uploader/ ftpuser@104.131.39.131:files/
   print "removing files"
