@@ -124,7 +124,7 @@ def uploadFiles(files,dict):
   #print "uploading the folloing files:"
   #print files
   #print "COMMAND= sftp -b batchfile -oPort=" + str(dict['port']) + " -oIdentityFile=" + str(dict['id']) + " " + str(dict['user']) + "@" + str(dict['sftp'])
-  os.system("sftp -b /usr/local/blackboard/content/vi/BBLEARN/plugins/log_uploader/batchfile -oPort=" + str(dict['port']) + " -oIdentityFile="+str(dict['id']) + " " +str(dict['user']) + "@" + str(dict['sftp']) ) 
+  os.system("sftp -b /usr/local/blackboard/content/vi/*/plugins/log_uploader/batchfile -oPort=" + str(dict['port']) + " -oIdentityFile="+str(dict['id']) + " " +str(dict['user']) + "@" + str(dict['sftp']) + ":" + str(dict['path']) ) 
   #print "rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp']) + ":" + str(dict['path'])
   #os.system("rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp']) + ":" + str(dict['path']))
   #print "scp -i " +  str(dict['id']) + " -r /tmp/uploader/* " + str(dict['user']) + "@" + str(dict['sftp'])
