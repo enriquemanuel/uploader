@@ -1,7 +1,6 @@
-#!/usr/local/bin/python # if local
-## if in MH Servers #!/mnt/asp/python/bin/python
+#!/mnt/asp/python/bin/python
 
-import logging, sys, argparse, gzip, os, datetime, socket
+import logging, sys, argparse, gzip, os, datetime, socket, shutil
 
 def get_args():
   # Define the parser
@@ -33,12 +32,10 @@ def get_args():
   cli_parser.add_argument('--tomcatstd', type=str, help='To include or not the bb-services.log')
 
   args = parser.parse_args()
-
   # Set all the Vars
   return setVars(args)
 
 def setVars(args):
-
   try:
     args.file
   except AttributeError: # file is not defined, so using CLI
@@ -50,11 +47,11 @@ def setVars(args):
       args.id='~/.ssh/id_rsa'
     findAndCompressLogs(vars(args))
   else:
-    readVars(args.file)
+    readVars(args.file,args)
 
 
 # Read the vars from the file
-def readVars(filename):
+def readVars(filename,args):
   with open(filename) as f:
     varsdict = {}
     for line in f:
@@ -62,12 +59,10 @@ def readVars(filename):
       varsdict[items[0]] = items[1].rstrip('\n')
   findAndCompressLogs(varsdict)
 
-
 def findAndCompressLogs(dict):
   # first lets create the temp folder
   tmpFolder = createTmpFolder()
   files=[]
-
   if dict['bbservices'] == 'Y':
     output = gzipFile(tmpFolder, filenameDict['bbservices'], yesDate2)
     files.append(output)
@@ -89,9 +84,7 @@ def findAndCompressLogs(dict):
   if dict['tomcatstd'] == 'Y':
     output = gzipFile(tmpFolder, filenameDict['tomcatstd'], yesDate1)
     files.append(output)
-
-
-  uploadFiles(files, dict)
+  uploadFiles(files,dict)
 
 
 def createTmpFolder():
@@ -107,7 +100,7 @@ def gzipFile(tmpFolder, inputFilename, date):
   bbLogsPath='/usr/local/blackboard/logs/'
   log=""
   if  inputFilename == 'stdout-stderr-':
-   # print "inside the if " +inputFilename
+   # print "inside the if" +inputFilename
     log = inputFilename + date + '.log'
     inputFile=open(bbLogsPath +'tomcat/' +log, 'rb')
   if inputFilename == 'bb-access-log.':
@@ -118,7 +111,7 @@ def gzipFile(tmpFolder, inputFilename, date):
     #print "else " + inputFilename
     log = inputFilename + date + '.txt'
     inputFile=open(bbLogsPath +log, 'rb')
-
+  
   gzipFile=appnum + '-' + inputFilename + date +'.gz'
   gzippedFile=gzip.open('/tmp/uploader/'+'/'+gzipFile, 'wb')
   gzippedFile.writelines(inputFile)
@@ -128,20 +121,24 @@ def gzipFile(tmpFolder, inputFilename, date):
 
 
 def uploadFiles(files,dict):
-  print "uploading the following files:"
-  print files
-  os.system("sftp -b /usr/local/blackboard/content/vi/*/plugins/log_uploader/batchfile -oPort=" + str(dict['port']) + " -oIdentityFile="+str(dict['id']) + " " +str(dict['user']) + "@" + str(dict['sftp']) + ":" + str(dict['path'] ) )
-  #os.system("rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp'])
-+ ":" + str(dict['path']))
-  # rsync -azP -e 'ssh -p22 -i /tmp/bk/evalenzuela/something_rsa' /tmp/uploader/ ftpuser@104.131.39.131:files/
-  print "removing files"
+  #print "uploading the folloing files:"
+  #print files
+  #print "COMMAND= sftp -b batchfile -oPort=" + str(dict['port']) + " -oIdentityFile=" + str(dict['id']) + " " + str(dict['user']) + "@" + str(dict['sftp'])
+  os.system("sftp -b /usr/local/blackboard/content/vi/BBLEARN/plugins/log_uploader/batchfile -oPort=" + str(dict['port']) + " -oIdentityFile="+str(dict['id']) + " " +str(dict['user']) + "@" + str(dict['sftp']) ) 
+  #print "rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp']) + ":" + str(dict['path'])
+  #os.system("rsync -azP -e 'ssh -p " + str(dict['port']) + " -i " + str(dict['id']) + "' /tmp/uploader/ " + str(dict['user']) + "@" + str(dict['sftp']) + ":" + str(dict['path']))
+  #print "scp -i " +  str(dict['id']) + " -r /tmp/uploader/* " + str(dict['user']) + "@" + str(dict['sftp'])
+  #os.system("scp -i " +  str(dict['id']) + " -r /tmp/uploader/* " + str(dict['user']) + "@" + str(dict['sftp']))
+  #scp -i  +  str(dict['id']) + " -r /tmp/uploader/* " + str(dict['user']) + "@" + str(dict['sftp'])
+  print "removing temp local files"
   shutil.rmtree('/tmp/uploader/')
-
-
+  print "===================================================="
+  print "process completed at " + str(today) + " for " + str(hostname)
+  print "===================================================="
+ 
 ####################
 ### GLOBAL VARS ####
 ####################
-globalargs ={}
 today = datetime.datetime.now()
 curDate2 = today.strftime("%Y-%m-%d")
 
@@ -150,7 +147,7 @@ yesDate1 = yesterday.strftime("%Y%m%d")
 yesDate2 = yesterday.strftime("%Y-%m-%d")
 
 hostname = socket.gethostname()
-appnum = hostname[-5:]
+appnum = hostname[-3:]
 
 
 filenameDict = {'bbservices': 'bb-services-log.',
